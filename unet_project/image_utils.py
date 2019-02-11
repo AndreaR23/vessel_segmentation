@@ -16,7 +16,7 @@ class ImageUtils:
     def _load_images(self):
         print('Loading images.')
         for file in tqdm(sorted(os.listdir(self._path_to_dir))):
-            img = cv2.imread(os.path.join(self._path_to_dir, file))
+            img = cv2.imread(os.path.join(self._path_to_dir, file))[:, :, :3]
             self._loaded_imgs[file] = img
 
     def _preprocess_images(self):
@@ -29,20 +29,3 @@ class ImageUtils:
         self._load_images()
         self._preprocess_images()
         return self._preprocessed_imgs
-
-
-# def main():
-#     path = '/home/ajuska/Dokumenty/Skola/diplomka/train_Brano/imgs/'
-#     img_height = 224
-#     img_width = 224
-#
-#     a = ImageUtils(path, img_height, img_width)
-#     imgs = a.get_preprocessed_images()
-#     for key, val in imgs.items():
-#         print(val.shape)
-#         break
-#     # print(imgs)
-#
-#
-# if __name__ == '__main__':
-#     main()
