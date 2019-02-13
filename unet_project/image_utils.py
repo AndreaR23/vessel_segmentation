@@ -2,6 +2,7 @@ import os
 import cv2
 from skimage.transform import resize
 from tqdm import tqdm
+from keras.preprocessing import image
 
 
 class ImageUtils:
@@ -23,7 +24,8 @@ class ImageUtils:
         print('\nPreprocessing images.')
         for key, val in tqdm(self._loaded_imgs.items()):
             resized_img = resize(val, (self._img_height, self._img_width), mode='constant', preserve_range=True)
-            self._preprocessed_imgs[key] = resized_img
+            array_img = image.img_to_array(resized_img)
+            self._preprocessed_imgs[key] = array_img
 
     def get_preprocessed_images(self):
         self._load_images()

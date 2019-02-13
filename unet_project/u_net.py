@@ -1,14 +1,9 @@
-from unet_project.image_utils import ImageUtils
-from unet_project.data_augmentation import DataAugmentation
-
 from keras.models import Model
 from keras.layers import Input
 from keras.layers.core import Dropout, Lambda
-from keras.layers.convolutional import Conv2D, Conv2DTranspose, UpSampling2D, Cropping2D
+from keras.layers.convolutional import Conv2D, Conv2DTranspose
 from keras.layers.pooling import MaxPooling2D
 from keras.layers.merge import concatenate
-from keras.layers import Dense, Flatten, BatchNormalization
-from keras.callbacks import EarlyStopping, ModelCheckpoint
 
 
 class Unet:
@@ -90,35 +85,7 @@ class Unet:
         outputs = Conv2D(1, (1, 1), activation='sigmoid')(c9)
 
         model = Model(inputs=[inputs], outputs=[outputs])
-        # model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['acc'])
-        # model.summary()
 
         model.compile(optimizer='sgd', loss='binary_crossentropy', metrics=['acc'])
+        # model.summary()
         return model
-
-
-def main():
-    path_to_imgs = '/home/ajuska/Dokumenty/Skola/diplomka/custom_train/imgs/'
-    path_to_masks = '/home/ajuska/Dokumenty/Skola/diplomka/custom_train/masks/'
-    img_height = 700
-    img_width = 950
-    img_channels = 3
-
-    image_utils = ImageUtils(path_to_imgs, img_height, img_width)
-    imgs = image_utils.get_preprocessed_images()
-
-    extend_data = DataAugmentation(input_images=imgs, path_to_masks=path_to_masks, img_height=img_height,
-                                   img_width=img_width, how_many=4)
-    extended_imgs, extended_masks = extend_data.extend_database()
-    print(extended_imgs[0].shape)
-    print(extended_masks[0].shape)
-    unet = Unet(img_height=img_height, img_width=img_width, img_channels=img_channels)
-    model = unet.create_model()
-    earlystopper = EarlyStopping(patience=5, verbose=1)
-    checkpointer = ModelCheckpoint('/models/model-test.h5', verbose=1, save_best_only=True)
-    model.fit(extended_imgs, extended_masks, validation_split=0.1, batch_size=1, epochs=10,
-              callbacks=[earlystopper, checkpointer])
-
-
-if __name__ == '__main__':
-    main()
