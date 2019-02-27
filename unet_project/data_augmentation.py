@@ -53,6 +53,33 @@ class DataAugmentation:
         return resize(img, _size, mode='constant', preserve_range=True), \
                resize(mask, _size, mode='constant', preserve_range=True)
 
+    def create_patches(self, img, mask):
+        h, w, _ = img.shape
+
+        if h == self._img_height and w == self._img_width:
+            return img, mask
+
+        elif h < self._img_height and w < self._img_width:
+            help_matrix = np.array([[[0 for x in range(3)] for y in range(self._img_height)] \
+                                    for z in range(self._img_width)])
+            help_matrix[0:h, 0:w, :] = help_matrix[0:h, 0:w, :] + img[:, :, :]
+
+            help_matrix_mask = np.array([[0 for x in range(self._img_height)] for y in range(self._img_width)])
+            help_matrix_mask[0:h, 0:w] = help_matrix_mask[0:h, 0:w] + mask[:, :, 0]
+            return help_matrix, help_matrix_mask
+
+        elif h < self._img_height and w >= self._img_width:
+            # Do cerne matice a patches
+            pass
+
+        elif h >= self._img_height and w < self._img_width:
+            # Do cerne matice a patches
+            pass
+
+        elif h > self._img_height and w > self._img_width:
+            # Patches
+            pass
+
     def extend_database(self):
         print('\nExtending database.')
 
