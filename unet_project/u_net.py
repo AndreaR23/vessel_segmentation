@@ -31,6 +31,7 @@ class Unet:
         return (ch1, ch2), (cw1, cw2)
 
     def create_model(self):
+        print('Creating model.')
         inputs = Input((self._img_height, self._img_width, self._img_channels))
         s = Lambda(lambda x: x / 255)(inputs)
 

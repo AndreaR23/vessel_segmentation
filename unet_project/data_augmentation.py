@@ -5,11 +5,9 @@ import imutils
 
 
 class DataAugmentation:
-    def __init__(self, input_images_masks, img_height, img_width, how_many=1):
+    def __init__(self, input_images_masks, how_many=1):
         self._how_many = how_many
         self._input_images_masks = input_images_masks
-        self._img_height = img_height
-        self._img_width = img_width
         self._images_and_masks = {}
         self._output_images = []
         self._output_masks = []
@@ -47,7 +45,7 @@ class DataAugmentation:
         return resize(img, _size, mode='constant', preserve_range=True), \
                resize(mask, _size, mode='constant', preserve_range=True)
 
-    def _extend_database(self):
+    def extend_database(self):
         print('\nExtending database.')
 
         for key, val in tqdm(self._input_images_masks.items()):
