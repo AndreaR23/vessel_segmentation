@@ -18,7 +18,7 @@ class PatchesCreator:
         changed_image[..., 2] = b
 
         changed_mask = np.lib.pad(mask[:, :], ((fill_up, fill_down), (fill_left, fill_right)), 'constant',
-                                  constant_values=(0))
+                                  constant_values=(255))
         return changed_image, changed_mask
 
     def _changed_dims(self, img, mask):

@@ -29,8 +29,9 @@ class ImageUtils:
     def _preprocess_images(self):
         print('\nPreprocessing images.')
         for key, val in tqdm(self._loaded_imgs.items()):
-            img_ = cv2.cvtColor(val[50:50+670, 50:50+900], cv2.COLOR_BGR2GRAY)
-            img = cv2.cvtColor(cv2.equalizeHist(img_), cv2.COLOR_GRAY2RGB)
+            img = val[50:50+670, 50:50+900]
+            # img_ = cv2.cvtColor(val[50:50+670, 50:50+900], cv2.COLOR_BGR2GRAY)
+            # img = cv2.cvtColor(cv2.equalizeHist(img_), cv2.COLOR_GRAY2RGB)
             mask_ = self._loaded_masks[key]
             mask = mask_[50:50+670, 50:50+900]
             self._preprocessed_imgs_masks[key] = (img, mask)

@@ -16,7 +16,8 @@ class Unet:
     def create_model(self):
         print('Creating model.')
         inputs = Input((self._img_height, self._img_width, self._img_channels))
-        s = Lambda(lambda x: x / 255)(inputs)
+        # s = Lambda(lambda x: x / 255)(inputs)
+        s = Lambda(lambda x: x)(inputs)
 
         c1 = Conv2D(16, (3, 3), activation='elu', kernel_initializer='he_normal', padding='same')(s)
         c1 = Dropout(0.1)(c1)
