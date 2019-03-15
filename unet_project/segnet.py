@@ -6,9 +6,9 @@ from keras.optimizers import SGD
 import json
 
 
-class SegNet():
+class SegNet:
 
-    def __init__(self, img_height=256, img_width=256, img_channels=1, number_labels=2, kernel_size=3):
+    def __init__(self, img_height=320, img_width=320, img_channels=1, number_labels=2, kernel_size=3):
         self._img_height = img_height
         self._img_width = img_width
         self._img_channels = img_channels
@@ -72,7 +72,7 @@ class SegNet():
 
         for l in autoencoder.encoding_layers:
             autoencoder.add(l)
-            print(l.input_shape,l.output_shape,l)
+            # print(l.input_shape, l.output_shape, l)
 
         decoding_layers = [
             UpSampling2D(),
@@ -127,13 +127,18 @@ class SegNet():
         for l in autoencoder.decoding_layers:
             autoencoder.add(l)
 
-        autoencoder.add(Reshape((self._n_labels, self._img_height * self._img_width)))
+        autoencoder.add(Reshape((self._n_labels, self._img_height * self._img_width),
+                                input_shape=(self._img_height, self._img_width, self._img_channels)))
         autoencoder.add(Permute((2, 1)))
         autoencoder.add(Activation('softmax'))
+        #
+        # autoencoder.add(Reshape((self._n_labels, self._img_height * self._img_width)))
+        # autoencoder.add(Permute((2, 1)))
+        # autoencoder.add(Activation('softmax'))
 
         optimizer = SGD(lr=0.001, momentum=0.9, decay=0.0005, nesterov=False)
         autoencoder.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=['accuracy'])
-
+        autoencoder.summary()
         # with open('model_5l_segnet.json', 'w') as outfile:
         #     outfile.write(json.dumps(json.loads(autoencoder.to_json()), indent=2))
 

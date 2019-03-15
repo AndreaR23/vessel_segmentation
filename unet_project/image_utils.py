@@ -16,14 +16,14 @@ class ImageUtils:
     def _load_images(self):
         print('Loading images.')
         for file in tqdm(sorted(os.listdir(self._path_to_imgs_dir))):
-            img = cv2.imread(os.path.join(self._path_to_imgs_dir, file))[:, :, :3]
+            img = cv2.imread(os.path.join(self._path_to_imgs_dir, file))#[:, :, :3]
             self._loaded_imgs[file] = img
 
     def _load_masks(self):
         print('\nLoading masks.')
         for key, val in self._loaded_imgs.items():
             path = os.path.join(self._path_to_masks_dir, key)
-            mask = cv2.imread(os.path.join(self._path_to_masks_dir, key))[:, :, :1]
+            mask = cv2.imread(os.path.join(self._path_to_masks_dir, key))[:, :, 0]#[:, :, :1]
             self._loaded_masks[key] = mask
 
     def _preprocess_images(self):
