@@ -8,138 +8,65 @@ import json
 
 class SegNet:
 
-    def __init__(self, img_height=320, img_width=320, img_channels=1, number_labels=2, kernel_size=3):
+    def __init__(self, img_height=320, img_width=320, img_channels=3, classes=2, kernel_size=3):
         self._img_height = img_height
         self._img_width = img_width
         self._img_channels = img_channels
-        self._n_labels = number_labels
+        self._classes = classes
         self._kernel = kernel_size
 
     def create_model(self):
-        encoding_layers = [
-            Conv2D(64,  self._kernel, padding='same', input_shape=(self._img_height, self._img_width, self._img_channels)),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(64,  self._kernel, padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            MaxPooling2D(),
+        img_input = Input(shape=(self._img_heigh, self._img_width, self._img_channels))
+        x = img_input
+        # Encoder
+        x = Conv2D(64, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
 
-            Conv2D(128, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(128, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            MaxPooling2D(),
+        x = Conv2D(128, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
 
-            Conv2D(256, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(256, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(256, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            MaxPooling2D(),
+        x = Conv2D(256, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
+        x = MaxPooling2D(pool_size=(2, 2))(x)
 
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            MaxPooling2D(),
+        x = Conv2D(512, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
 
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            MaxPooling2D(),
-        ]
+        # Decoder
+        x = Conv2D(512, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
 
-        autoencoder = models.Sequential()
-        autoencoder.encoding_layers = encoding_layers
+        x = UpSampling2D(size=(2, 2))(x)
+        x = Conv2D(256, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
 
-        for l in autoencoder.encoding_layers:
-            autoencoder.add(l)
-            # print(l.input_shape, l.output_shape, l)
+        x = UpSampling2D(size=(2, 2))(x)
+        x = Conv2D(128, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
 
-        decoding_layers = [
-            UpSampling2D(),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
+        x = UpSampling2D(size=(2, 2))(x)
+        x = Conv2D(64, (3, 3), padding="same")(x)
+        x = BatchNormalization()(x)
+        x = Activation("relu")(x)
 
-            UpSampling2D(),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(512, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(256, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-
-            UpSampling2D(),
-            Conv2D(256, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(256, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(128, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-
-            UpSampling2D(),
-            Conv2D(128, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(64, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-
-            UpSampling2D(),
-            Conv2D(64, (self._kernel,  self._kernel), padding='same'),
-            BatchNormalization(),
-            Activation('relu'),
-            Conv2D(self._n_labels, (1, 1), padding='valid'),
-            BatchNormalization(),
-        ]
-        autoencoder.decoding_layers = decoding_layers
-        for l in autoencoder.decoding_layers:
-            autoencoder.add(l)
-
-        autoencoder.add(Reshape((self._n_labels, self._img_height * self._img_width),
-                                input_shape=(self._img_height, self._img_width, self._img_channels)))
-        autoencoder.add(Permute((2, 1)))
-        autoencoder.add(Activation('softmax'))
-        #
-        # autoencoder.add(Reshape((self._n_labels, self._img_height * self._img_width)))
-        # autoencoder.add(Permute((2, 1)))
-        # autoencoder.add(Activation('softmax'))
+        x = Conv2D(classes, (1, 1), padding="valid")(x)
+        x = Reshape((self._height * self._img_width, self_classes))(x)
+        x = Activation("softmax")(x)
+        model = Model(img_input, x)
 
         optimizer = SGD(lr=0.001, momentum=0.9, decay=0.0005, nesterov=False)
-        autoencoder.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=['accuracy'])
-        autoencoder.summary()
+        model.compile(loss="binary_crossentropy", optimizer=optimizer, metrics=['accuracy'])
+        model.summary()
         # with open('model_5l_segnet.json', 'w') as outfile:
         #     outfile.write(json.dumps(json.loads(autoencoder.to_json()), indent=2))
 
-        return autoencoder
+        return model
