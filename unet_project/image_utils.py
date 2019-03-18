@@ -26,7 +26,7 @@ class ImageUtils:
         for key, val in self._loaded_imgs.items():
             path = os.path.join(self._path_to_masks_dir, key)
             try:
-                mask = cv2.imread(os.path.join(self._path_to_masks_dir, key))[:, :, 0]
+                mask = cv2.imread(os.path.join(self._path_to_masks_dir, key))[:, :, :1]
                 self._loaded_masks[key] = mask
             except:
                 print(key)
