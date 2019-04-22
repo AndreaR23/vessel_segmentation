@@ -1,10 +1,13 @@
+import sys
+sys.path.append('..')
+
 from imgaug import augmenters as iaa
 import os
 import numpy as np
 import random
 import math
 from segmentation_models.backbones import get_preprocessing
-from image_utils import ImageUtils
+from classes.image_utils import ImageUtils
 
 class DataGenerator:
     
