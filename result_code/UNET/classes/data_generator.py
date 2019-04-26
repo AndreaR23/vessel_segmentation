@@ -8,10 +8,13 @@ import random
 import math
 from segmentation_models.backbones import get_preprocessing
 from classes.image_utils import ImageUtils
+from classes.create_patches import PatchesCreator
+
 
 class DataGenerator:
     
-    def __init__(self, path_to_imgs, path_to_masks, img_height, img_width, backbone, batch_size, preprocess=True):
+    def __init__(self, path_to_imgs, path_to_masks, img_height, img_width, backbone, batch_size, preprocess=True,  
+                 patches=True):
         self._path_to_imgs = path_to_imgs
         self._path_to_masks = path_to_masks
         self._img_height = img_height
@@ -19,10 +22,11 @@ class DataGenerator:
         self._backbone = backbone
         self._batch_size = batch_size
         self._preprocess = preprocess
+        self._region = seg_region
+        self._patches = patches
 
-    def disk_data_gen(self):
-        # Create data generators for fitting - train and validate
-        image_ut = ImageUtils(self._path_to_imgs, self._path_to_masks, self._img_height, self._img_width, architecture='unet')
+    def data_generate(self):
+        image_ut = ImageUtils(self._path_to_imgs, self._path_to_masks, self._img_height, self._img_width)
         preprocess_input = get_preprocessing(self._backbone)
         
         while 1:
@@ -42,7 +46,19 @@ class DataGenerator:
             for idx in range(len(augmented_imgs)):
                 img.append(augmented_imgs[idx])
                 mask.append(augmented_masks[idx])
-            
+                
+            if self._patches:
+                all_patches_im = []
+                all_patches_ma = []
+                for idx in range(len(img)):
+                    creator = PatchesCreator(self._img_height, self._img_width)
+                    patches_im, patches_ma = creator.create_patches(img[idx], mask[idx])
+                    for p_idx in range(len(patches_im)):
+                        all_patches_im.append(patches_im[p_idx])
+                        all_patches_ma.append(patches_ma[p_idx])
+                img = all_patches_im
+                mask = all_patches_ma
+                    
             if self._preprocess:
                 imgs = [preprocess_input(x)/255. for x in img]
                 masks = [y/255. for y in mask]
@@ -61,3 +77,5 @@ class DataGenerator:
                 batch_masks = masks_shuffled[start:stop]
                 inkr = inkr +  self._batch_size
                 yield np.array(batch_imgs), np.array(batch_masks)
+    
+ 

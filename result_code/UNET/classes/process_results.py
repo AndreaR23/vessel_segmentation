@@ -1,10 +1,11 @@
-from segmentation_models.backbones import get_preprocessing
-from image_utils import ImageUtils
 import random
 import numpy as np
 import os
 from scipy.signal import medfilt2d
 import cv2
+
+from classes.image_utils import ImageUtils
+from segmentation_models.backbones import get_preprocessing
 
 
 class ProcessResults:
@@ -14,7 +15,8 @@ class ProcessResults:
         self._masks = []
         self._predicted_imgs = []
 
-    def predict_images(self, backbone, val_frame_path, val_mask_path, model, img_height, img_width, preprocess=True, how_many=20):
+    def predict_images_from_dir(self, backbone, val_frame_path, val_mask_path, model, img_height, img_width, 
+                                preprocess=True, how_many=20):
 
         preprocess_input = get_preprocessing(backbone)
 
@@ -40,6 +42,18 @@ class ProcessResults:
             self._masks.append(test_mask)
             self._predicted_imgs.append(predicted_img)
 
+    @staticmethod
+    def predict_image(img, model, backbone, preprocess=True):
+        preprocess_input = get_preprocessing(backbone)
+        if preprocess:
+                img = preprocess_input(img)/255
+        else:
+            img = img/255
+            
+        expand_test = np.expand_dims(img, axis=0)
+        predicted_img = model.predict(expand_test)
+        return predicted_img
+        
     @staticmethod
     def med_ext_med_filter(predicted_img, med1_kernel_size=3, ext_kernel_size=(12,12), med2_kernel_size=7):
         kernel = np.ones(ext_kernel_size, np.uint8)
